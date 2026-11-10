@@ -12,7 +12,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 
-const API = 'http://localhost:8080/feedbacks';
+const API = 'https://carvio-backend.onrender.com/feedbacks';
 
 // outlineStyle is a web-only style; keep it away from native platforms.
 const WEB_NO_OUTLINE =

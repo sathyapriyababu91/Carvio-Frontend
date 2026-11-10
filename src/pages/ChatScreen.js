@@ -15,7 +15,7 @@ import {
 import { getToken, getUserId } from '../utils/authStorage';
 import { styles } from '../styles/ChatScreen.styles';
 
-const API = 'http://localhost:8080';
+const API = 'https://carvio-backend.onrender.com';
 
 // Alert.alert does nothing on react-native-web, so use window.alert there.
 const notify = (title, msg) => {

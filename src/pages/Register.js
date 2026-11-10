@@ -5,7 +5,6 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  Alert,
   Image,
   ScrollView,
   Platform,
@@ -14,14 +13,9 @@ import {
   ActivityIndicator,
 } from "react-native";
 
-// Alert.alert web-la work aagaadhu, so web-ku window.alert use panrom
-const showAlert = (title, message) => {
-  if (Platform.OS === "web") {
-    window.alert(message ? `${title}\n\n${message}` : title);
-  } else {
-    Alert.alert(title, message);
-  }
-};
+import { API_URL } from "../utils/config";
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function Register({ setActiveTab }) {
   const [name, setName] = useState("");
@@ -31,82 +25,98 @@ export default function Register({ setActiveTab }) {
   const [confirmPassword, setConfirmPassword] = useState("");
 
   const [loading, setLoading] = useState(false);
+  const [registered, setRegistered] = useState(false);
 
   // UI only states
   const [focused, setFocused] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [message, setMessage] = useState(null);
+
+  // Alert does not work on web, so messages are shown inside the screen
+  const showError = (text) => setMessage({ type: "error", text });
+  const showSuccess = (text) => setMessage({ type: "success", text });
+  const clearMessage = () => {
+    if (message) setMessage(null);
+  };
 
   // ================= REGISTER =================
 
   const handleRegister = async () => {
+    setMessage(null);
 
-    if (!name || !phone || !password || !confirmPassword) {
-      showAlert("Error", "Please fill all required fields");
+    const trimmedName = name.trim();
+    const trimmedEmail = email.trim();
+
+    if (!trimmedName || !phone || !password || !confirmPassword) {
+      showError("Please fill all required fields");
       return;
     }
 
     if (phone.length !== 10) {
-      showAlert("Error", "Please enter a valid 10-digit phone number");
+      showError("Please enter a valid 10-digit phone number");
+      return;
+    }
+
+    if (trimmedEmail && !EMAIL_REGEX.test(trimmedEmail)) {
+      showError("Please enter a valid email address");
       return;
     }
 
     if (password.length < 6) {
-      showAlert("Error", "Password must be at least 6 characters");
+      showError("Password must be at least 6 characters");
       return;
     }
 
     if (password !== confirmPassword) {
-      showAlert("Error", "Passwords do not match");
+      showError("Passwords do not match");
       return;
     }
 
     try {
       setLoading(true);
 
-      console.log("REGISTER DATA SENT:", { name, email, phone });
+      console.log("REGISTER DATA SENT:", {
+        name: trimmedName,
+        email: trimmedEmail,
+        phone,
+      });
 
-      const response = await fetch(
-        "http://localhost:8080/auth/register",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            name: name,
-            email: email,
-            phone: phone,
-            password: password,
-          }),
-        }
-      );
+      const response = await fetch(`${API_URL}/auth/register`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: trimmedName,
+          // empty email is not sent at all
+          email: trimmedEmail || undefined,
+          phone: phone,
+          password: password,
+        }),
+      });
 
       const data = await response.json();
 
       console.log("REGISTER RESPONSE:", data);
 
       if (!response.ok || !data.success) {
-        showAlert(
-          "Registration Failed",
+        showError(
           data.message || data.error || "Unable to register"
         );
         return;
       }
 
-      showAlert(
-        "Registration Successful",
-        "Your account has been created! Please login to continue."
-      );
-      setActiveTab("LOGIN");
+      setRegistered(true);
+      showSuccess("Account created! Taking you to login...");
 
+      setTimeout(() => {
+        setActiveTab("LOGIN");
+      }, 1500);
     } catch (error) {
       console.log("REGISTER ERROR:", error);
 
-      showAlert(
-        "Connection Error",
-        "Unable to connect to the CARVIO server."
-      );
+      showError("Unable to connect to the CARVIO server.");
     } finally {
       setLoading(false);
     }
@@ -156,9 +166,16 @@ export default function Register({ setActiveTab }) {
 
             <TextInput
               value={name}
-              onChangeText={setName}
+              onChangeText={(t) => {
+                setName(t);
+                clearMessage();
+              }}
               placeholder="Enter your full name"
               placeholderTextColor="#98A2B3"
+              autoCapitalize="words"
+              autoComplete="name"
+              textContentType="name"
+              returnKeyType="next"
               onFocus={() => setFocused("name")}
               onBlur={() => setFocused("")}
               style={[rs.input, focused === "name" && rs.inputFocused]}
@@ -173,11 +190,18 @@ export default function Register({ setActiveTab }) {
 
             <TextInput
               value={email}
-              onChangeText={setEmail}
+              onChangeText={(t) => {
+                setEmail(t);
+                clearMessage();
+              }}
               placeholder="Enter your email"
               placeholderTextColor="#98A2B3"
               keyboardType="email-address"
               autoCapitalize="none"
+              autoCorrect={false}
+              autoComplete="email"
+              textContentType="emailAddress"
+              returnKeyType="next"
               onFocus={() => setFocused("email")}
               onBlur={() => setFocused("")}
               style={[rs.input, focused === "email" && rs.inputFocused]}
@@ -197,16 +221,25 @@ export default function Register({ setActiveTab }) {
 
               <TextInput
                 value={phone}
-                onChangeText={(t) => setPhone(t.replace(/[^0-9]/g, ""))}
+                onChangeText={(t) => {
+                  setPhone(t.replace(/[^0-9]/g, ""));
+                  clearMessage();
+                }}
                 placeholder="Enter mobile number"
                 placeholderTextColor="#98A2B3"
                 keyboardType="phone-pad"
                 maxLength={10}
+                autoComplete="tel"
+                textContentType="telephoneNumber"
                 onFocus={() => setFocused("phone")}
                 onBlur={() => setFocused("")}
                 style={rs.phoneInput}
               />
             </View>
+
+            <Text style={rs.hint}>
+              📱 You will use this number to login with OTP
+            </Text>
           </View>
 
           {/* ---------- Password ---------- */}
@@ -218,10 +251,17 @@ export default function Register({ setActiveTab }) {
             >
               <TextInput
                 value={password}
-                onChangeText={setPassword}
+                onChangeText={(t) => {
+                  setPassword(t);
+                  clearMessage();
+                }}
                 placeholder="Min 6 characters"
                 placeholderTextColor="#98A2B3"
                 secureTextEntry={!showPassword}
+                autoCapitalize="none"
+                autoComplete="new-password"
+                textContentType="newPassword"
+                returnKeyType="next"
                 onFocus={() => setFocused("password")}
                 onBlur={() => setFocused("")}
                 style={rs.passwordInput}
@@ -246,10 +286,18 @@ export default function Register({ setActiveTab }) {
             >
               <TextInput
                 value={confirmPassword}
-                onChangeText={setConfirmPassword}
+                onChangeText={(t) => {
+                  setConfirmPassword(t);
+                  clearMessage();
+                }}
                 placeholder="Re-enter password"
                 placeholderTextColor="#98A2B3"
                 secureTextEntry={!showConfirm}
+                autoCapitalize="none"
+                autoComplete="new-password"
+                textContentType="newPassword"
+                returnKeyType="done"
+                onSubmitEditing={handleRegister}
                 onFocus={() => setFocused("confirm")}
                 onBlur={() => setFocused("")}
                 style={rs.passwordInput}
@@ -265,12 +313,38 @@ export default function Register({ setActiveTab }) {
             </View>
           </View>
 
+          {/* ---------- Message (error / success) ---------- */}
+          {message ? (
+            <View
+              style={[
+                rs.messageBox,
+                message.type === "error"
+                  ? rs.messageError
+                  : rs.messageSuccess,
+              ]}
+            >
+              <Text style={rs.messageIcon}>
+                {message.type === "error" ? "⚠️" : "✅"}
+              </Text>
+              <Text
+                style={[
+                  rs.messageText,
+                  message.type === "error"
+                    ? rs.messageTextError
+                    : rs.messageTextSuccess,
+                ]}
+              >
+                {message.text}
+              </Text>
+            </View>
+          ) : null}
+
           {/* ---------- Register Button ---------- */}
           <TouchableOpacity
             onPress={handleRegister}
-            style={[rs.button, loading && rs.buttonDisabled]}
+            style={[rs.button, (loading || registered) && rs.buttonDisabled]}
             activeOpacity={0.85}
-            disabled={loading}
+            disabled={loading || registered}
           >
             {loading ? (
               <View style={rs.loadingRow}>
@@ -301,6 +375,11 @@ export default function Register({ setActiveTab }) {
               🔒 Your details are secure with CARVIO
             </Text>
           </View>
+
+          <Text style={rs.termsText}>
+            By registering, you agree to CARVIO's Terms of Service and
+            Privacy Policy.
+          </Text>
 
         </View>
 
@@ -416,6 +495,13 @@ const rs = StyleSheet.create({
     color: "#98A2B3",
   },
 
+  hint: {
+    fontSize: 12,
+    color: "#667085",
+    marginTop: 6,
+    marginLeft: 2,
+  },
+
   input: {
     height: 52,
     borderWidth: 1.5,
@@ -425,6 +511,10 @@ const rs = StyleSheet.create({
     fontSize: 15,
     color: "#101828",
     backgroundColor: "#F9FAFB",
+    ...Platform.select({
+      web: { outlineStyle: "none" },
+      default: {},
+    }),
   },
 
   inputFocused: {
@@ -467,7 +557,10 @@ const rs = StyleSheet.create({
     fontSize: 15,
     color: "#101828",
     borderWidth: 0,
-    outlineStyle: "none",
+    ...Platform.select({
+      web: { outlineStyle: "none" },
+      default: {},
+    }),
   },
 
   // ----- password -----
@@ -488,7 +581,10 @@ const rs = StyleSheet.create({
     fontSize: 15,
     color: "#101828",
     borderWidth: 0,
-    outlineStyle: "none",
+    ...Platform.select({
+      web: { outlineStyle: "none" },
+      default: {},
+    }),
   },
 
   eyeButton: {
@@ -501,6 +597,47 @@ const rs = StyleSheet.create({
     fontSize: 13,
     fontWeight: "700",
     color: "#2F6FED",
+  },
+
+  // ----- message box -----
+  messageBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    marginBottom: 6,
+  },
+
+  messageError: {
+    backgroundColor: "#FEF3F2",
+    borderColor: "#FECDCA",
+  },
+
+  messageSuccess: {
+    backgroundColor: "#ECFDF3",
+    borderColor: "#ABEFC6",
+  },
+
+  messageIcon: {
+    fontSize: 15,
+    marginRight: 10,
+  },
+
+  messageText: {
+    flex: 1,
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: "600",
+  },
+
+  messageTextError: {
+    color: "#B42318",
+  },
+
+  messageTextSuccess: {
+    color: "#067647",
   },
 
   // ----- button -----
@@ -563,5 +700,13 @@ const rs = StyleSheet.create({
     fontSize: 12,
     color: "#027A48",
     fontWeight: "600",
+  },
+
+  termsText: {
+    marginTop: 14,
+    fontSize: 11,
+    lineHeight: 16,
+    color: "#98A2B3",
+    textAlign: "center",
   },
 });

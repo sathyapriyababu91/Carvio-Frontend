@@ -108,7 +108,7 @@ export default function AIChatScreen({ setActiveTab }) {
 
     try {
       const response = await fetch(
-        "http://localhost:8080/ai/chat",
+        "https://carvio-backend.onrender.com/ai/chat",
         {
           method: "POST",
           headers: {

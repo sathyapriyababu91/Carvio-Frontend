@@ -189,7 +189,7 @@ const ChangePassword = ({ setActiveTab }) => {
       }
 
       const response = await fetch(
-        "http://localhost:8080/auth/change-password",
+        "https://carvio-backend.onrender.com/auth/change-password",
         {
           method: "PUT",
           headers: {

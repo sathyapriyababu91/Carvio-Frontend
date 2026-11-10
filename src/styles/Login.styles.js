@@ -282,6 +282,9 @@ export const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "800",
     letterSpacing: 10,
+    // balances the extra letter spacing after the last digit,
+    // so the digits sit exactly in the centre
+    paddingLeft: 10,
     color: "#101B36",
     marginBottom: 12,
     ...noOutline,
@@ -300,11 +303,14 @@ export const styles = StyleSheet.create({
   resendMuted: {
     fontSize: 13,
     color: "#667085",
+    paddingVertical: 6,
   },
   resendLink: {
     fontSize: 13,
     fontWeight: "800",
     color: BLUE,
+    // bigger touch area for the small link on phones
+    paddingVertical: 6,
   },
 
   button: {
@@ -336,7 +342,7 @@ export const styles = StyleSheet.create({
 
   secureText: {
     fontSize: 12.5,
-    color: "#98A2B3",
+    color: "#667085",
     textAlign: "center",
     marginTop: 18,
   },
@@ -363,7 +369,7 @@ export const styles = StyleSheet.create({
   termsText: {
     fontSize: 11.5,
     lineHeight: 17,
-    color: "#98A2B3",
+    color: "#7A8699",
     textAlign: "center",
     marginTop: 16,
   },

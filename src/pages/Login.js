@@ -19,7 +19,8 @@ import {
   getResponsiveStyles,
 } from "../styles/Login.styles";
 
-const RESEND_SECONDS = 30;
+// Must match the backend resend cooldown (60 seconds)
+const RESEND_SECONDS = 60;
 
 const benefits = [
   "Buy and sell vehicles easily",

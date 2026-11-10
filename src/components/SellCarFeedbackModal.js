@@ -12,7 +12,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 
-const API_URL = 'http://localhost:8080';
+const API_URL = 'https://carvio-backend.onrender.com';
 
 const showFeedbackAlert = (title, message) => {
   if (Platform.OS === 'web') {

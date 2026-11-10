@@ -156,7 +156,7 @@ const EditProfile = ({ setActiveTab }) => {
       setSaving(true);
 
       const response = await fetch(
-        `http://localhost:8080/user/update/${userId}`,
+        `https://carvio-backend.onrender.com/user/update/${userId}`,
         {
           method: "PUT",
 

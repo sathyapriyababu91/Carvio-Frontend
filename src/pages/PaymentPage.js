@@ -14,7 +14,7 @@ import {
 
 import { getToken } from '../utils/authStorage';
 
-const API_URL = 'http://localhost:8080';
+const API_URL = 'https://carvio-backend.onrender.com';
 
 const BOOSTER_PACKS = {
   '15_DAYS': {

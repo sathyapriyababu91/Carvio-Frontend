@@ -45,7 +45,7 @@ export default function MessagesScreen({
       }
 
       const response = await fetch(
-        'http://localhost:8080/chat/my-chats',
+      'https://carvio-backend.onrender.com/chat/my-chats',
         {
           method: 'GET',
           headers: {

@@ -694,7 +694,7 @@ const EditCar = ({ car, setActiveTab }) => {
       setSaving(true);
 
       const response = await fetch(
-        `http://localhost:8080/car/${car._id}`,
+        `https://carvio-backend.onrender.com/car/${car._id}`,
         {
           method: "PUT",
 

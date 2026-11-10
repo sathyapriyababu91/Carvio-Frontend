@@ -615,7 +615,7 @@ const openLocationPicker = () => {
     }
 
     const response = await fetch(
-      'http://localhost:8080/upload/image',
+      'https://carvio-backend.onrender.com/upload/image',
       {
         method: 'POST',
         body: formData,
@@ -824,7 +824,7 @@ if (Number(price) < 10000) {
 
       console.log('COMMERCIAL VEHICLE DATA:', vehicleData);
 
-      const response = await fetch('http://localhost:8080/car/add', {
+      const response = await fetch('https://carvio-backend.onrender.com/car/add', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

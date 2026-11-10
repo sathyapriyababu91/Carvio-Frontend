@@ -1,7 +1,7 @@
 import { io } from "socket.io-client";
 import { getToken } from "./authStorage";
 
-const SOCKET_URL = "http://localhost:8080";
+const SOCKET_URL = "https://carvio-backend.onrender.com";
 
 let socket = null;
 
