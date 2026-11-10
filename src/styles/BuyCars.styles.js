@@ -17,6 +17,35 @@ export const styles = StyleSheet.create({
     width: '100%',
   },
 
+  /* ---------- Vehicle details: back bar (phone) ---------- */
+  detailsWrapper: { flex: 1, backgroundColor: '#F6F8FC' },
+  detailsTopBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E8ECF3',
+  },
+  backButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    minHeight: 44,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 22,
+    backgroundColor: '#F1F4FA',
+  },
+  backButtonIcon: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#121826',
+    lineHeight: 22,
+  },
+  backButtonText: { fontSize: 14, fontWeight: '700', color: '#121826' },
+
   /* ---------- Vehicle type tabs ---------- */
   typeRow: {
     flexDirection: 'row',
@@ -40,7 +69,7 @@ export const styles = StyleSheet.create({
   typeTabText: { fontSize: 13, fontWeight: '700', color: '#121826' },
   typeTabTextActive: { color: '#FFFFFF' },
 
-  /* ---------- Top bar: search | fuel badges | sort ---------- */
+  /* ---------- Top bar: fuel badges | sort ---------- */
   topBar: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -79,12 +108,27 @@ export const styles = StyleSheet.create({
 
   fuelCenter: { alignItems: 'center', flex: 1, minWidth: 0 },
   discoverText: { fontSize: 15, color: '#6B7280', marginBottom: 8 },
+  discoverTextMobile: {
+    fontSize: 14,
+    fontWeight: '600',
+    textAlign: 'left',
+    alignSelf: 'flex-start',
+  },
   fuelRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     flexWrap: 'wrap',
     gap: 10,
+  },
+  // Phone: one swipeable row of fuel badges.
+  fuelScroll: { width: '100%', flexGrow: 0, flexShrink: 0 },
+  fuelScrollContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingVertical: 4,
+    paddingRight: 12,
   },
   fuelAll: {
     fontSize: 20,
@@ -132,9 +176,9 @@ export const styles = StyleSheet.create({
   },
   sortValue: { fontSize: 15, color: '#121826' },
 
-  // On the web the menu floats over the content below it. On Android / iOS
-  // a menu hanging outside its parent cannot be tapped, so there it is part
-  // of the normal layout.
+  // On a wide web screen the menu floats over the content below it. On a
+  // phone (and on Android / iOS) it is part of the normal layout, so it
+  // pushes the content down and never covers anything.
   sortMenu: {
     position: isWeb ? 'absolute' : 'relative',
     ...(isWeb ? { top: 48, left: 0, right: 0 } : { marginTop: 6 }),
@@ -149,6 +193,13 @@ export const styles = StyleSheet.create({
     shadowRadius: 10,
     elevation: 6,
     zIndex: 50,
+  },
+  sortMenuInline: {
+    position: 'relative',
+    top: 0,
+    left: 0,
+    right: 0,
+    marginTop: 6,
   },
   sortItem: { minHeight: 44, justifyContent: 'center', paddingHorizontal: 14 },
   sortItemActive: { backgroundColor: '#F1F4FA' },

@@ -4,13 +4,13 @@ import {
   View,
   Text,
   TouchableOpacity,
-  TextInput,
   ScrollView,
   Alert,
   ActivityIndicator,
   Image,
   Share,
   Platform,
+  BackHandler,
   useWindowDimensions,
 } from 'react-native';
 
@@ -129,6 +129,55 @@ const getLocationText = (location) => {
     );
 
   return looksLikeCoordinates ? '' : text;
+};
+
+// Lower-case and replace punctuation with spaces, so that
+// "Maruti-Suzuki", "maruti suzuki" and "MARUTI SUZUKI" all look the same.
+const normalizeText = (value) =>
+  String(value === undefined || value === null ? '' : value)
+    .toLowerCase()
+    .replace(/[^a-z0-9\u0080-\uFFFF]+/g, ' ')
+    .trim();
+
+// Fields that must never be searched (ids, links, dates, long text).
+const SEARCH_SKIP_KEYS = new Set([
+  '_id',
+  'id',
+  '__v',
+  'seller',
+  'images',
+  'videos',
+  'description',
+  'status',
+  'boostStatus',
+  'boostEndDate',
+  'expiresAt',
+  'createdAt',
+  'updatedAt',
+]);
+
+// Collects every text field of the car (brand, model, variant, title, body
+// type, colour, ...). This way a search by ANY name works, whatever the
+// field is called in the database.
+const buildSearchText = (car) => {
+  const parts = [];
+
+  Object.keys(car || {}).forEach((key) => {
+    if (SEARCH_SKIP_KEYS.has(key)) return;
+
+    const value = car[key];
+
+    if (key === 'location') {
+      parts.push(getLocationText(value));
+    } else if (typeof value === 'string') {
+      if (/^https?:\/\//i.test(value.trim())) return;
+      parts.push(value);
+    } else if (key === 'year' && value) {
+      parts.push(String(value));
+    }
+  });
+
+  return normalizeText(parts.join(' '));
 };
 
 const CheckRow = ({ label, active, onPress }) => (
@@ -316,9 +365,8 @@ export default function BuyCars({
   const [vehicleType, setVehicleType] = useState('');
   const [localSearchQuery, setLocalSearchQuery] = useState('');
 
-  // The box always shows what the person typed. A search sent from the
-  // top bar or from the Home page is copied into it, so it can be edited
-  // or cleared. (Before, a non-empty top-bar search froze this box.)
+  // The search is typed only in the top bar. Whatever is typed there (or
+  // sent from the Home page) is copied here and used to filter the list.
   useEffect(() => {
     if (typeof externalSearchQuery === 'string') {
       setLocalSearchQuery(externalSearchQuery);
@@ -334,9 +382,6 @@ export default function BuyCars({
 
   const searchText = localSearchQuery;
 
-  const setSearchText = (value) => {
-    setLocalSearchQuery(value);
-  };
   const [selectedPrice, setSelectedPrice] = useState('');
   const [selectedBrands, setSelectedBrands] = useState([]);
   const [selectedFuel, setSelectedFuel] = useState('');
@@ -447,10 +492,11 @@ console.log(
                 : '🚚',
           title:
             car.title ||
-            `${car.brand || ''} ${car.modelName || ''}`.trim() ||
+            `${car.brand || ''} ${car.modelName || car.model || ''}`.trim() ||
             'Used Vehicle',
           brand: car.brand || '',
-          model: car.modelName || '',
+          model: car.modelName || car.model || '',
+          variant: car.variant || '',
           year: car.year,
           fuelType: car.fuelType || '',
           transmission: car.transmission || '',
@@ -468,6 +514,8 @@ console.log(
           status: car.status,
           boostStatus: car.boostStatus || 'NONE',
 boostEndDate: car.boostEndDate || null,
+          // Every text field of the car, used by the search box.
+          searchText: buildSearchText(car),
         }));
 
       setVehicles(formatted);
@@ -515,6 +563,62 @@ boostEndDate: car.boostEndDate || null,
     fetchVehicles();
     loadFavourites();
   }, []);
+
+  // Phone back button (Android) and browser back button (web): while a
+  // vehicle is open they return to the list instead of leaving the app.
+  useEffect(() => {
+    if (Platform.OS === 'web') {
+      if (typeof window === 'undefined') return undefined;
+
+      const onPopState = () => setSelectedVehicle(null);
+
+      window.addEventListener('popstate', onPopState);
+
+      return () => window.removeEventListener('popstate', onPopState);
+    }
+
+    const subscription = BackHandler.addEventListener(
+      'hardwareBackPress',
+      () => {
+        if (selectedVehicle) {
+          setSelectedVehicle(null);
+          return true;
+        }
+
+        return false;
+      }
+    );
+
+    return () => subscription.remove();
+  }, [selectedVehicle]);
+
+  const openVehicle = (vehicle) => {
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      try {
+        // One extra history entry, so the browser back button closes the
+        // vehicle page and does not leave the site.
+        window.history.pushState({ carvioVehicle: true }, '');
+      } catch (err) {
+        console.log('HISTORY ERROR:', err);
+      }
+    }
+
+    setSelectedVehicle(vehicle);
+  };
+
+  const goBackToList = () => {
+    if (
+      Platform.OS === 'web' &&
+      typeof window !== 'undefined' &&
+      window.history.state &&
+      window.history.state.carvioVehicle
+    ) {
+      window.history.back();
+      return;
+    }
+
+    setSelectedVehicle(null);
+  };
 
   const clearFilters = () => {
   setVehicleType('');
@@ -635,6 +739,12 @@ boostEndDate: car.boostEndDate || null,
     ? priceOptions[vehicleType] || []
     : [];
 
+  // "alto", "maruti suzuki", "alto lxi", "LXI" ... every word typed must
+  // be found somewhere in the vehicle's details.
+  const searchTerms = normalizeText(searchText)
+    .split(' ')
+    .filter(Boolean);
+
   const filteredVehicles = vehicles
     .filter((vehicle) => {
       if (vehicleType && vehicle.type !== vehicleType) {
@@ -721,24 +831,36 @@ if (heroBodyType) {
   }
 }
 
-const search = searchText.trim().toLowerCase();
+// Search box: brand, model, variant, title, fuel, city ... anything.
+if (searchTerms.length > 0) {
+  const haystack = normalizeText(
+    [
+      vehicle.searchText,
+      vehicle.title,
+      vehicle.brand,
+      vehicle.model,
+      vehicle.variant,
+      vehicle.type,
+      vehicle.fuelType,
+      vehicle.transmission,
+      vehicle.locationText,
+      vehicle.year,
+    ]
+      .filter(Boolean)
+      .join(' ')
+  );
 
-const searchableText = [
-  vehicle.title,
-  vehicle.brand,
-  vehicle.model,
-  vehicle.type,
-  vehicle.fuelType,
-  vehicle.transmission,
-  vehicle.locationText,
-  vehicle.year,
-]
-  .filter(Boolean)
-  .join(' ')
-  .toLowerCase();
+  // Also match when the person types the words without a space
+  // (for example "marutisuzuki").
+  const compact = haystack.replace(/ /g, '');
 
-if (search && !searchableText.includes(search)) {
-  return false;
+  const matchesAll = searchTerms.every(
+    (term) => haystack.includes(term) || compact.includes(term)
+  );
+
+  if (!matchesAll) {
+    return false;
+  }
 }
 
       if (
@@ -815,17 +937,76 @@ if (search && !searchableText.includes(search)) {
 });
   if (selectedVehicle) {
     return (
-      <CarDetails
-        key={selectedVehicle.id}
-        car={selectedVehicle}
-        onBack={() => setSelectedVehicle(null)}
-      />
+      <View style={styles.detailsWrapper}>
+        {isMobile ? (
+          <View style={styles.detailsTopBar}>
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={goBackToList}
+              activeOpacity={0.8}
+              accessibilityLabel="Back to listings"
+            >
+              <Text style={styles.backButtonIcon}>←</Text>
+              <Text style={styles.backButtonText}>Back to listings</Text>
+            </TouchableOpacity>
+          </View>
+        ) : null}
+
+        <View style={{ flex: 1 }}>
+          <CarDetails
+            key={selectedVehicle.id}
+            car={selectedVehicle}
+            onBack={goBackToList}
+          />
+        </View>
+      </View>
     );
   }
 
   const sortLabel =
     sortOptions.find((option) => option.value === sortBy)?.label ||
     'Default';
+
+  // "All" + fuel badges. On a phone they sit in one swipeable row, so they
+  // never wrap or hide behind the Sort box.
+  const fuelChips = (
+    <>
+      <TouchableOpacity onPress={() => setSelectedFuel('')}>
+        <Text
+          style={[
+            styles.fuelAll,
+            selectedFuel !== '' && styles.fuelAllInactive,
+          ]}
+        >
+          All
+        </Text>
+      </TouchableOpacity>
+
+      {fuelOptions.map((fuel) => {
+        const active = selectedFuel === fuel;
+
+        return (
+          <TouchableOpacity
+            key={fuel}
+            style={[
+              styles.fuelBadge,
+              active && styles.fuelBadgeActive,
+            ]}
+            onPress={() => setSelectedFuel(active ? '' : fuel)}
+          >
+            <Text
+              style={[
+                styles.fuelBadgeText,
+                active && styles.fuelBadgeTextActive,
+              ]}
+            >
+              {fuel}
+            </Text>
+          </TouchableOpacity>
+        );
+      })}
+    </>
+  );
 
   return (
     <ScrollView
@@ -880,92 +1061,45 @@ if (search && !searchableText.includes(search)) {
           isMobile && {
             flexDirection: 'column',
             alignItems: 'stretch',
-            gap: 14,
+            flexWrap: 'nowrap',
+            gap: 12,
           },
         ]}
       >
-        <View
-          style={[
-            styles.searchPill,
-            isMobile && {
-              width: '100%',
-              height: 48,
-            },
-          ]}
-        >
-          <Text style={styles.searchIcon}>🔍</Text>
-
-          <TextInput
-  style={styles.searchInput}
-  placeholder="Search car by brand or model"
-  placeholderTextColor="#9AA3B2"
-  value={searchText}
-  onChangeText={setSearchText}
-  returnKeyType="search"
-/>
-        </View>
-
         <View
           style={[
             styles.fuelCenter,
             isMobile && {
               minWidth: 0,
               width: '100%',
-              flex: 0,
+              alignItems: 'stretch',
+              flexGrow: 0,
+              flexShrink: 0,
+              flexBasis: 'auto',
             },
           ]}
         >
-          <Text style={styles.discoverText}>
+          <Text
+            style={[
+              styles.discoverText,
+              isMobile && styles.discoverTextMobile,
+            ]}
+          >
             Discover Preowned Car by
           </Text>
 
-          <View
-            style={[
-              styles.fuelRow,
-              isMobile && {
-                gap: 12,
-                flexWrap: 'wrap',
-                justifyContent: 'center',
-              },
-            ]}
-          >
-            <TouchableOpacity onPress={() => setSelectedFuel('')}>
-              <Text
-                style={[
-                  styles.fuelAll,
-                  selectedFuel !== '' && styles.fuelAllInactive,
-                ]}
-              >
-                All
-              </Text>
-            </TouchableOpacity>
-
-            {fuelOptions.map((fuel) => {
-              const active = selectedFuel === fuel;
-
-              return (
-                <TouchableOpacity
-                  key={fuel}
-                  style={[
-                    styles.fuelBadge,
-                    active && styles.fuelBadgeActive,
-                  ]}
-                  onPress={() =>
-                    setSelectedFuel(active ? '' : fuel)
-                  }
-                >
-                  <Text
-                    style={[
-                      styles.fuelBadgeText,
-                      active && styles.fuelBadgeTextActive,
-                    ]}
-                  >
-                    {fuel}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
+          {isMobile ? (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={styles.fuelScroll}
+              contentContainerStyle={styles.fuelScrollContent}
+            >
+              {fuelChips}
+            </ScrollView>
+          ) : (
+            <View style={styles.fuelRow}>{fuelChips}</View>
+          )}
         </View>
 
         <View
@@ -992,7 +1126,12 @@ if (search && !searchableText.includes(search)) {
           </TouchableOpacity>
 
           {sortOpen ? (
-            <View style={styles.sortMenu}>
+            <View
+              style={[
+                styles.sortMenu,
+                isMobile && styles.sortMenuInline,
+              ]}
+            >
               {sortOptions.map((option) => (
                 <TouchableOpacity
                   key={option.value}
@@ -1205,7 +1344,7 @@ if (search && !searchableText.includes(search)) {
                   isLiked={likedVehicles.includes(vehicle.id)}
                   onLike={handleLike}
                   onShare={handleShare}
-                  onView={setSelectedVehicle}
+                  onView={openVehicle}
                   cardStyle={cardStyle}
                   imageStyle={imageStyle}
                 />
