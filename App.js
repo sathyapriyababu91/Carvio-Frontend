@@ -1,4 +1,3 @@
-
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import {
@@ -7,6 +6,8 @@ import {
   ActivityIndicator,
   BackHandler,
   Platform,
+  View,
+  useWindowDimensions,
 } from 'react-native';
 
 import Navbar from './src/components/Navbar';
@@ -38,6 +39,7 @@ import MessagesScreen from './src/pages/MessagesScreen';
 import ChatScreen from './src/pages/ChatScreen';
 import AIChatScreen from './src/pages/AIChatScreen';
 
+import CarDetails from './src/pages/CarDetails';
 import Services from './src/pages/Services';
 import HelpSupport from './src/pages/HelpSupport';
 import SellCarFeedbackModal from './src/components/SellCarFeedbackModal';
@@ -74,6 +76,8 @@ const nextHistory = (stack, current, next) => {
 };
 
 export default function App() {
+  const { width } = useWindowDimensions();
+
   const [activeTab, setActiveTabState] = useState(null);
 
   const activeTabRef = useRef(null);
@@ -95,11 +99,22 @@ export default function App() {
 
   const [editCar, setEditCar] = useState(null);
 
+  // Vehicle opened from a Home page card.
+  const [selectedVehicle, setSelectedVehicle] = useState(null);
+
   const [searchQuery, setSearchQuery] = useState('');
   const [searchFilters, setSearchFilters] = useState(EMPTY_FILTERS);
 
   const [sellCarFeedbackVisible, setSellCarFeedbackVisible] =
     useState(false);
+
+  // On phones the Navbar shows a bottom tab bar (Home, Chat, Sell,
+  // My Ads, Account). Leave room for it so it never covers content.
+  const showBottomBar =
+    width < 768 &&
+    activeTab !== null &&
+    !AUTH_TABS.includes(activeTab) &&
+    activeTab !== 'CHAT';
 
   const showTab = useCallback((tab) => {
     activeTabRef.current = tab;
@@ -249,6 +264,11 @@ export default function App() {
     navigate('CHAT');
   };
 
+  const openVehicleDetails = (vehicle) => {
+    setSelectedVehicle(vehicle);
+    navigate('VEHICLE DETAILS');
+  };
+
   const openEditCar = (listing) => {
     setEditCar(listing);
     navigate('EDIT CAR');
@@ -285,6 +305,17 @@ export default function App() {
           <Home
             setActiveTab={navigate}
             onSearch={handleHeroSearch}
+            openChat={openChat}
+            onOpenVehicle={openVehicleDetails}
+          />
+        );
+
+      case 'VEHICLE DETAILS':
+        return (
+          <CarDetails
+            key={selectedVehicle?.id}
+            car={selectedVehicle}
+            onBack={goBack}
           />
         );
 
@@ -441,7 +472,14 @@ export default function App() {
         />
       )}
 
-      {renderScreen()}
+      <View
+        style={[
+          styles.screen,
+          showBottomBar && styles.screenWithBottomBar,
+        ]}
+      >
+        {renderScreen()}
+      </View>
 
       <SellCarFeedbackModal
         visible={sellCarFeedbackVisible}
@@ -461,5 +499,14 @@ const styles = StyleSheet.create({
   splash: {
     justifyContent: 'center',
     alignItems: 'center',
+  },
+
+  screen: {
+    flex: 1,
+  },
+
+  // Same height as the Navbar bottom tab bar.
+  screenWithBottomBar: {
+    paddingBottom: 66,
   },
 });

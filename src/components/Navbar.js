@@ -29,6 +29,16 @@ const NAV_ITEMS = [
   { label: 'HELP & SUPPORT', icon: '❔' },
 ];
 
+// Phone bottom tab bar (OLX style): Home, Chat, Sell, My Ads, Account.
+// "label" is the activeTab value used by the parent screen.
+const BOTTOM_TABS = [
+  { label: 'HOME', title: 'Home', icon: '⌂' },
+  { label: 'MESSAGES', title: 'Chat', icon: '💬' },
+  { label: 'SELL CARS', title: 'Sell', icon: '＋', center: true },
+  { label: 'MY LISTINGS', title: 'My Ads', icon: '▤' },
+  { label: 'MY ACCOUNT', title: 'Account', icon: '👤' },
+];
+
 // Refresh quickly so the badge clears soon after a chat is read.
 const UNREAD_REFRESH_MS = 5000;
 
@@ -271,7 +281,8 @@ export default function Navbar({
   const handleNavigation = (item) => {
     const requiresLogin =
       item.label === 'MY ACCOUNT' ||
-      item.label === 'MESSAGES';
+      item.label === 'MESSAGES' ||
+      item.label === 'MY LISTINGS';
 
     if (requiresLogin && !user) {
       setActiveTab('LOGIN');
@@ -485,6 +496,84 @@ export default function Navbar({
     );
   };
 
+  // OLX-style bottom tab bar (phones only).
+  const renderBottomTab = (tab) => {
+    const isActive = activeTab === tab.label;
+
+    if (tab.center) {
+      return (
+        <View key={tab.label} style={styles.bottomTabCenter}>
+          <Pressable
+            onPress={() => handleNavigation(tab)}
+            style={({ pressed }) => [
+              styles.bottomSellButton,
+              pressed && { opacity: 0.85, transform: [{ scale: 0.95 }] },
+            ]}
+            accessibilityRole="button"
+            accessibilityLabel="Sell your vehicle"
+          >
+            <Text style={styles.bottomSellPlus}>+</Text>
+          </Pressable>
+
+          <Text
+            style={[
+              styles.bottomLabel,
+              styles.bottomSellLabel,
+              isActive && styles.bottomLabelActive,
+            ]}
+          >
+            {tab.title}
+          </Text>
+        </View>
+      );
+    }
+
+    return (
+      <Pressable
+        key={tab.label}
+        onPress={() => handleNavigation(tab)}
+        style={({ pressed }) => [
+          styles.bottomTab,
+          pressed && { opacity: 0.7 },
+        ]}
+        accessibilityRole="button"
+        accessibilityLabel={tab.title}
+        accessibilityState={{ selected: isActive }}
+      >
+        <View
+          style={[
+            styles.bottomIconWrap,
+            isActive && styles.bottomIconWrapActive,
+          ]}
+        >
+          <Text
+            style={[
+              styles.bottomIcon,
+              isActive && styles.bottomIconActive,
+            ]}
+          >
+            {tab.icon}
+          </Text>
+
+          {tab.label === 'MESSAGES' && isLoggedIn && unreadCount > 0 && (
+            <View style={styles.bottomBadge} pointerEvents="none">
+              <Text style={styles.bottomBadgeText}>{unreadLabel}</Text>
+            </View>
+          )}
+        </View>
+
+        <Text
+          style={[
+            styles.bottomLabel,
+            isActive && styles.bottomLabelActive,
+          ]}
+        >
+          {tab.title}
+        </Text>
+      </Pressable>
+    );
+  };
+
   const menuTranslateY = menuAnimation.interpolate({
     inputRange: [0, 1],
     outputRange: [-24, 0],
@@ -549,348 +638,357 @@ export default function Navbar({
   );
 
   return (
-    <Animated.View
-      style={[
-        styles.mainContainer,
-        isMobile && styles.mobileMainContainer,
-        {
-          zIndex: 100,
-          opacity: enterAnimation,
-          transform: [{ translateY: enterTranslateY }],
-        },
-      ]}
-    >
-      {showAnnBar && (
-        <View style={styles.annBar}>
-          <View
-            style={[
-              styles.annInner,
-              isMobile && styles.annInnerMobile,
-            ]}
-          >
-            <View style={styles.annLeft}>
-              <View style={styles.annDotWrap}>
-                <Animated.View
-                  style={[
-                    styles.annDotRing,
-                    pulseRingStyle(1, 2.4),
-                  ]}
-                />
-
-                <View style={styles.annDot} />
-              </View>
-
-              <Text
-                style={styles.annText}
-                numberOfLines={1}
-              >
-                <Text style={styles.annTextStrong}>
-                  Buy smarter. Sell faster.
-                </Text>
-
-                {!isMobile
-                  ? "  ·  India's premium auto marketplace"
-                  : ''}
-              </Text>
-            </View>
-          </View>
-        </View>
-      )}
-
-      <View
+    <>
+      <Animated.View
         style={[
-          styles.topBar,
-          isMobile && styles.mobileTopBar,
-          isWide && styles.topBarWide,
-          isCompactMobile && {
-            flexWrap: 'nowrap',
+          styles.mainContainer,
+          isMobile && styles.mobileMainContainer,
+          {
+            zIndex: 100,
+            opacity: enterAnimation,
+            transform: [{ translateY: enterTranslateY }],
           },
         ]}
       >
-        <View
-          style={[
-            styles.brandSection,
-            isMobile && styles.mobileBrandSection,
-            isCompactMobile && {
-              flexShrink: 0,
-            },
-          ]}
-        >
-          <TouchableOpacity
-            style={styles.brandRow}
-            onPress={handleBrandPress}
-            activeOpacity={0.8}
-            accessibilityRole="button"
-            accessibilityLabel="CARVIO home"
-          >
+        {showAnnBar && (
+          <View style={styles.annBar}>
             <View
               style={[
-                styles.logoWrap,
-                isMobile && styles.mobileLogoWrap,
+                styles.annInner,
+                isMobile && styles.annInnerMobile,
               ]}
             >
-              <Image
-                source={require('../assets/logo.png')}
-                style={[
-                  styles.logoImage,
-                  isMobile && styles.mobileLogoImage,
-                ]}
-                resizeMode="contain"
-              />
-            </View>
+              <View style={styles.annLeft}>
+                <View style={styles.annDotWrap}>
+                  <Animated.View
+                    style={[
+                      styles.annDotRing,
+                      pulseRingStyle(1, 2.4),
+                    ]}
+                  />
 
-            <View>
-              <Text
-                style={[
-                  styles.logo,
-                  isMobile && styles.mobileLogo,
-                ]}
-              >
-                CARVIO
-              </Text>
+                  <View style={styles.annDot} />
+                </View>
 
-              {!isMobile && (
-                <Text style={styles.logoTagline}>
-                  PREMIUM AUTO MARKET
-                </Text>
-              )}
-            </View>
-          </TouchableOpacity>
+                <Text
+                  style={styles.annText}
+                  numberOfLines={1}
+                >
+                  <Text style={styles.annTextStrong}>
+                    Buy smarter. Sell faster.
+                  </Text>
 
-          {!isMobile && !isWide && (
-            <View style={styles.locationBadge}>
-              <Text style={styles.locationPin}>📍</Text>
-
-              <View>
-                <Text style={styles.locationSmallText}>
-                  LOCATION
-                </Text>
-
-                <Text style={styles.locationText}>
-                  India
+                  {!isMobile
+                    ? "  ·  India's premium auto marketplace"
+                    : ''}
                 </Text>
               </View>
-
-              <Text style={styles.locationArrow}>▾</Text>
             </View>
-          )}
-        </View>
-
-        {isWide && !isAuthPage && (
-          <View style={styles.navCenter}>
-            {renderNavLinks()}
           </View>
         )}
 
-        {isWide && isAuthPage && (
-          <View style={{ flex: 1 }} />
-        )}
-
-        {showSearch && !isCompactMobile && renderSearch()}
-
         <View
           style={[
-            styles.accountSection,
+            styles.topBar,
+            isMobile && styles.mobileTopBar,
+            isWide && styles.topBarWide,
             isCompactMobile && {
-              flexShrink: 0,
-              gap: 6,
+              flexWrap: 'nowrap',
             },
           ]}
         >
-          {userLoaded && user ? (
+          <View
+            style={[
+              styles.brandSection,
+              isMobile && styles.mobileBrandSection,
+              isCompactMobile && {
+                flexShrink: 0,
+              },
+            ]}
+          >
             <TouchableOpacity
-              style={[
-                styles.accountButton,
-                isMobile && styles.mobileAccountButton,
-              ]}
-              onPress={() => {
-                setActiveTab('MY ACCOUNT');
-                setMenuOpen(false);
-              }}
+              style={styles.brandRow}
+              onPress={handleBrandPress}
               activeOpacity={0.8}
               accessibilityRole="button"
-              accessibilityLabel="My account"
+              accessibilityLabel="CARVIO home"
             >
               <View
                 style={[
-                  styles.accountIconCircle,
-                  isMobile && styles.mobileAccountIconCircle,
+                  styles.logoWrap,
+                  isMobile && styles.mobileLogoWrap,
                 ]}
               >
-                <Text style={styles.accountIcon}>
-                  👤
-                </Text>
+                <Image
+                  source={require('../assets/logo.png')}
+                  style={[
+                    styles.logoImage,
+                    isMobile && styles.mobileLogoImage,
+                  ]}
+                  resizeMode="contain"
+                />
               </View>
 
-              {!isMobile && (
-                <View style={styles.accountTextContainer}>
-                  <Text style={styles.accountSmallText}>
-                    WELCOME
+              <View>
+                <Text
+                  style={[
+                    styles.logo,
+                    isMobile && styles.mobileLogo,
+                  ]}
+                >
+                  CARVIO
+                </Text>
+
+                {!isMobile && (
+                  <Text style={styles.logoTagline}>
+                    PREMIUM AUTO MARKET
+                  </Text>
+                )}
+              </View>
+            </TouchableOpacity>
+
+            {!isMobile && !isWide && (
+              <View style={styles.locationBadge}>
+                <Text style={styles.locationPin}>📍</Text>
+
+                <View>
+                  <Text style={styles.locationSmallText}>
+                    LOCATION
                   </Text>
 
-                  <Text
-                    style={styles.accountName}
-                    numberOfLines={1}
-                  >
-                    {user.name || 'My Account'}
+                  <Text style={styles.locationText}>
+                    India
                   </Text>
                 </View>
-              )}
 
-              {!isMobile && (
-                <Text style={styles.accountArrow}>
-                  ▾
-                </Text>
-              )}
-            </TouchableOpacity>
-          ) : (
-            userLoaded && (
+                <Text style={styles.locationArrow}>▾</Text>
+              </View>
+            )}
+          </View>
+
+          {isWide && !isAuthPage && (
+            <View style={styles.navCenter}>
+              {renderNavLinks()}
+            </View>
+          )}
+
+          {isWide && isAuthPage && (
+            <View style={{ flex: 1 }} />
+          )}
+
+          {showSearch && !isCompactMobile && renderSearch()}
+
+          <View
+            style={[
+              styles.accountSection,
+              isCompactMobile && {
+                flexShrink: 0,
+                gap: 6,
+              },
+            ]}
+          >
+            {userLoaded && user ? (
               <TouchableOpacity
                 style={[
-                  styles.loginButton,
-                  isMobile && styles.mobileLoginButton,
+                  styles.accountButton,
+                  isMobile && styles.mobileAccountButton,
                 ]}
-                onPress={handleLoginPress}
+                onPress={() => {
+                  setActiveTab('MY ACCOUNT');
+                  setMenuOpen(false);
+                }}
                 activeOpacity={0.8}
+                accessibilityRole="button"
+                accessibilityLabel="My account"
               >
-                <Text style={styles.loginIcon}>♙</Text>
-
-                <Text style={styles.loginButtonText}>
-                  {isMobile ? 'Login' : 'Login / Register'}
-                </Text>
-              </TouchableOpacity>
-            )
-          )}
-
-          {isMobile && !isAuthPage && (
-            <TouchableOpacity
-              onPress={() => setMenuOpen((previous) => !previous)}
-              activeOpacity={0.75}
-              accessibilityRole="button"
-              accessibilityLabel={
-                menuOpen
-                  ? 'Close navigation menu'
-                  : 'Open navigation menu'
-              }
-              style={styles.hamburger}
-            >
-              <View style={styles.hamburgerLines}>
-                {[0, 1, 2].map((line) => (
-                  <View
-                    key={line}
-                    style={{
-                      width: line === 1 ? 16 : 21,
-                      height: 2,
-                      borderRadius: 2,
-                      backgroundColor: '#12224F',
-                    }}
-                  />
-                ))}
-              </View>
-
-              {isLoggedIn && unreadCount > 0 && (
-                <View style={styles.hamburgerDot} />
-              )}
-            </TouchableOpacity>
-          )}
-        </View>
-      </View>
-
-      {showSearch && isCompactMobile && renderSearch(true)}
-
-      {!isAuthPage && !isMobile && !isWide && (
-        <View style={styles.navigationBar}>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.navLinksContainer}
-          >
-            {renderNavLinks()}
-          </ScrollView>
-        </View>
-      )}
-
-      {/* The phone menu is a Modal (full overlay with a dimmed backdrop).
-          An absolutely positioned menu hanging outside the header does not
-          receive touches on Android, so every item would be untappable. */}
-      {isMobile && !isAuthPage && (
-        <Modal
-          visible={menuVisible}
-          transparent
-          animationType="none"
-          onRequestClose={() => setMenuOpen(false)}
-        >
-          <View style={styles.menuOverlay}>
-            <Animated.View
-              style={[
-                styles.menuBackdrop,
-                { opacity: menuAnimation },
-              ]}
-            >
-              <Pressable
-                style={styles.menuBackdropPress}
-                onPress={() => setMenuOpen(false)}
-                accessibilityLabel="Close navigation menu"
-              />
-            </Animated.View>
-
-            <Animated.View
-              style={[
-                styles.mobileMenu,
-                {
-                  maxHeight: height * 0.92,
-                  opacity: menuAnimation,
-                  transform: [{ translateY: menuTranslateY }],
-                },
-              ]}
-            >
-              <SafeAreaView>
-                <View style={styles.mobileMenuHeader}>
-                  <View style={styles.menuHeaderRow}>
-                    <View style={styles.menuHeaderText}>
-                      <Text style={styles.mobileMenuEyebrow}>
-                        CARVIO NAVIGATION
-                      </Text>
-
-                      <Text style={styles.mobileMenuTitle}>
-                        Find your next drive.
-                      </Text>
-                    </View>
-
-                    <TouchableOpacity
-                      onPress={() => setMenuOpen(false)}
-                      style={styles.menuClose}
-                      activeOpacity={0.75}
-                      accessibilityRole="button"
-                      accessibilityLabel="Close navigation menu"
-                    >
-                      <Text style={styles.menuCloseText}>✕</Text>
-                    </TouchableOpacity>
-                  </View>
+                <View
+                  style={[
+                    styles.accountIconCircle,
+                    isMobile && styles.mobileAccountIconCircle,
+                  ]}
+                >
+                  <Text style={styles.accountIcon}>
+                    👤
+                  </Text>
                 </View>
 
-                <ScrollView
-                  style={{ flexGrow: 0 }}
-                  showsVerticalScrollIndicator={false}
-                  bounces={false}
-                >
-                  {NAV_ITEMS.map(renderMobileMenuItem)}
-
-                  <View style={styles.mobileMenuFooter}>
-                    <Text style={styles.mobileMenuFooterSmall}>
-                      PREMIUM AUTO MARKET
+                {!isMobile && (
+                  <View style={styles.accountTextContainer}>
+                    <Text style={styles.accountSmallText}>
+                      WELCOME
                     </Text>
 
-                    <Text style={styles.mobileMenuFooterText}>
-                      Your next journey starts here.
+                    <Text
+                      style={styles.accountName}
+                      numberOfLines={1}
+                    >
+                      {user.name || 'My Account'}
                     </Text>
                   </View>
-                </ScrollView>
-              </SafeAreaView>
-            </Animated.View>
+                )}
+
+                {!isMobile && (
+                  <Text style={styles.accountArrow}>
+                    ▾
+                  </Text>
+                )}
+              </TouchableOpacity>
+            ) : (
+              userLoaded && (
+                <TouchableOpacity
+                  style={[
+                    styles.loginButton,
+                    isMobile && styles.mobileLoginButton,
+                  ]}
+                  onPress={handleLoginPress}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.loginIcon}>♙</Text>
+
+                  <Text style={styles.loginButtonText}>
+                    {isMobile ? 'Login' : 'Login / Register'}
+                  </Text>
+                </TouchableOpacity>
+              )
+            )}
+
+            {isMobile && !isAuthPage && (
+              <TouchableOpacity
+                onPress={() => setMenuOpen((previous) => !previous)}
+                activeOpacity={0.75}
+                accessibilityRole="button"
+                accessibilityLabel={
+                  menuOpen
+                    ? 'Close navigation menu'
+                    : 'Open navigation menu'
+                }
+                style={styles.hamburger}
+              >
+                <View style={styles.hamburgerLines}>
+                  {[0, 1, 2].map((line) => (
+                    <View
+                      key={line}
+                      style={{
+                        width: line === 1 ? 16 : 21,
+                        height: 2,
+                        borderRadius: 2,
+                        backgroundColor: '#12224F',
+                      }}
+                    />
+                  ))}
+                </View>
+
+                {isLoggedIn && unreadCount > 0 && (
+                  <View style={styles.hamburgerDot} />
+                )}
+              </TouchableOpacity>
+            )}
           </View>
-        </Modal>
+        </View>
+
+        {showSearch && isCompactMobile && renderSearch(true)}
+
+        {!isAuthPage && !isMobile && !isWide && (
+          <View style={styles.navigationBar}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.navLinksContainer}
+            >
+              {renderNavLinks()}
+            </ScrollView>
+          </View>
+        )}
+
+        {/* The phone menu is a Modal (full overlay with a dimmed backdrop).
+            An absolutely positioned menu hanging outside the header does not
+            receive touches on Android, so every item would be untappable. */}
+        {isMobile && !isAuthPage && (
+          <Modal
+            visible={menuVisible}
+            transparent
+            animationType="none"
+            onRequestClose={() => setMenuOpen(false)}
+          >
+            <View style={styles.menuOverlay}>
+              <Animated.View
+                style={[
+                  styles.menuBackdrop,
+                  { opacity: menuAnimation },
+                ]}
+              >
+                <Pressable
+                  style={styles.menuBackdropPress}
+                  onPress={() => setMenuOpen(false)}
+                  accessibilityLabel="Close navigation menu"
+                />
+              </Animated.View>
+
+              <Animated.View
+                style={[
+                  styles.mobileMenu,
+                  {
+                    maxHeight: height * 0.92,
+                    opacity: menuAnimation,
+                    transform: [{ translateY: menuTranslateY }],
+                  },
+                ]}
+              >
+                <SafeAreaView>
+                  <View style={styles.mobileMenuHeader}>
+                    <View style={styles.menuHeaderRow}>
+                      <View style={styles.menuHeaderText}>
+                        <Text style={styles.mobileMenuEyebrow}>
+                          CARVIO NAVIGATION
+                        </Text>
+
+                        <Text style={styles.mobileMenuTitle}>
+                          Find your next drive.
+                        </Text>
+                      </View>
+
+                      <TouchableOpacity
+                        onPress={() => setMenuOpen(false)}
+                        style={styles.menuClose}
+                        activeOpacity={0.75}
+                        accessibilityRole="button"
+                        accessibilityLabel="Close navigation menu"
+                      >
+                        <Text style={styles.menuCloseText}>✕</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+
+                  <ScrollView
+                    style={{ flexGrow: 0 }}
+                    showsVerticalScrollIndicator={false}
+                    bounces={false}
+                  >
+                    {NAV_ITEMS.map(renderMobileMenuItem)}
+
+                    <View style={styles.mobileMenuFooter}>
+                      <Text style={styles.mobileMenuFooterSmall}>
+                        PREMIUM AUTO MARKET
+                      </Text>
+
+                      <Text style={styles.mobileMenuFooterText}>
+                        Your next journey starts here.
+                      </Text>
+                    </View>
+                  </ScrollView>
+                </SafeAreaView>
+              </Animated.View>
+            </View>
+          </Modal>
+        )}
+      </Animated.View>
+
+      {/* OLX-style bottom tabs: Home, Chat, Sell, My Ads, Account. */}
+      {isMobile && !isAuthPage && (
+        <View style={styles.bottomBar}>
+          {BOTTOM_TABS.map(renderBottomTab)}
+        </View>
       )}
-    </Animated.View>
+    </>
   );
 }

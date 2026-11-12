@@ -23,26 +23,6 @@ export const styles = StyleSheet.create({
     }),
   },
 
-  bodyTypeSearchBox: {
-    paddingHorizontal: 10,
-    paddingTop: 10,
-    paddingBottom: 6,
-    backgroundColor: '#FFFFFF',
-  },
-
-  bodyTypeSearchInput: {
-    height: 44,
-    borderWidth: 1,
-    borderColor: '#E3E9F4',
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    backgroundColor: '#F7F9FD',
-    color: '#12224F',
-    fontSize: 14,
-    // "outlineStyle" is a web-only property; it is invalid on Android/iOS.
-    ...web({ outlineStyle: 'none' }),
-  },
-
   heroMobile: {
     flexDirection: 'column',
     width: '100%',
@@ -50,7 +30,7 @@ export const styles = StyleSheet.create({
 
   heroMain: {
     width: '100%',
-    minHeight: 510,
+    minHeight: 460,
     flexDirection: 'row',
     alignItems: 'stretch',
   },
@@ -64,7 +44,7 @@ export const styles = StyleSheet.create({
 
   imageWrap: {
     width: '46%',
-    minHeight: 510,
+    minHeight: 460,
     position: 'relative',
     overflow: 'hidden',
     backgroundColor: '#101D3D',
@@ -179,8 +159,7 @@ export const styles = StyleSheet.create({
     paddingVertical: 42,
   },
 
-  // முன்பு flex: 0 இருந்தது. web-ல் அது height-ஐ 0 ஆக்கி, hero content முழுவதும்
-  // overflow: hidden-ஆல் மறைந்துவிட்டது. இப்போது content உயரத்துக்கு ஏற்ப வளரும்.
+  // Content grows with its height (flex: 0 would collapse it on web).
   contentMobile: {
     width: '100%',
     flexGrow: 0,
@@ -260,210 +239,14 @@ export const styles = StyleSheet.create({
     color: '#CBD7F1',
     fontSize: 14,
     lineHeight: 22,
-    marginBottom: 22,
-  },
-
-  searchPanel: {
-    width: '100%',
-    maxWidth: 570,
-    alignSelf: 'stretch',
-    padding: 12,
-    borderRadius: 22,
-    backgroundColor: WHITE,
-    zIndex: 20,
-    ...(isWeb
-      ? {
-          boxShadow: '0 16px 38px rgba(0,0,0,0.22)',
-        }
-      : {
-          elevation: 8,
-          shadowColor: '#000000',
-          shadowOffset: { width: 0, height: 8 },
-          shadowOpacity: 0.16,
-          shadowRadius: 14,
-        }),
-  },
-
-  searchField: {
-    width: '100%',
-    position: 'relative',
-    zIndex: 2,
-    borderBottomWidth: 1,
-    borderBottomColor: '#EDF0F6',
-  },
-
-  // dropdown திறந்திருக்கும் field, கீழே உள்ள field-களுக்கு மேலே தெரிய வேண்டும்
-  searchFieldOpen: {
-    zIndex: 50,
-    elevation: 12,
-  },
-
-  searchFieldButton: {
-    minHeight: 56,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderRadius: 12,
-    justifyContent: 'center',
-  },
-
-  searchFieldPressed: {
-    backgroundColor: '#F2F6FF',
-  },
-
-  searchLabel: {
-    color: '#8B95A8',
-    fontSize: 9,
-    fontWeight: '900',
-    letterSpacing: 1.3,
-    marginBottom: 4,
-  },
-
-  searchValueRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-
-  searchValue: {
-    flex: 1,
-    minWidth: 0,
-    color: NAVY,
-    fontSize: 14,
-    fontWeight: '800',
-  },
-
-  searchCaret: {
-    color: BLUE,
-    fontSize: 17,
-    marginLeft: 10,
-  },
-
-  // On the web the list floats over the content below it.
-  // On Android/iOS an absolutely positioned list that hangs outside its
-  // parent cannot be tapped, so there it is part of the normal layout.
-  dropdown: {
-    position: isWeb ? 'absolute' : 'relative',
-    ...web({
-      top: '100%',
-      left: 0,
-      right: 0,
-    }),
-    marginTop: 4,
-    marginBottom: isWeb ? 0 : 6,
-    backgroundColor: WHITE,
-    borderWidth: 1,
-    borderColor: '#E3E9F4',
-    borderRadius: 14,
-    overflow: 'hidden',
-    zIndex: 100,
-    elevation: 12,
-    ...web({
-      boxShadow: '0 12px 28px rgba(18,34,79,0.18)',
-    }),
-  },
-
-  dropdownScroll: {
-    maxHeight: 200,
-  },
-
-  dropdownEmpty: {
-    paddingHorizontal: 14,
-    paddingVertical: 16,
-  },
-
-  dropdownEmptyText: {
-    color: MUTED,
-    fontSize: 12,
-    lineHeight: 18,
-  },
-
-  dropdownKeywordButton: {
-    minHeight: 46,
-    marginTop: 12,
-    paddingHorizontal: 14,
-    borderRadius: 12,
-    backgroundColor: '#EEF4FF',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-
-  dropdownKeywordText: {
-    color: BLUE,
-    fontSize: 13,
-    fontWeight: '900',
-  },
-
-  dropdownOption: {
-    minHeight: 48,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-
-  dropdownOptionSelected: {
-    backgroundColor: '#F2F6FF',
-  },
-
-  dropdownOptionPressed: {
-    backgroundColor: '#E8F0FF',
-  },
-
-  dropdownOptionText: {
-    color: '#45516B',
-    fontSize: 13,
-    fontWeight: '600',
-  },
-
-  dropdownOptionActive: {
-    color: BLUE,
-    fontWeight: '900',
-  },
-
-  optionCheck: {
-    color: BLUE,
-    fontWeight: '900',
-  },
-
-  searchButton: {
-    minHeight: 52,
-    width: '100%',
-    marginTop: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 14,
-    borderRadius: 14,
-    backgroundColor: BLUE,
-    alignItems: 'center',
-    justifyContent: 'center',
-    ...(isWeb
-      ? null
-      : {
-          elevation: 3,
-          shadowColor: BLUE,
-          shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: 0.3,
-          shadowRadius: 8,
-        }),
-    ...web({
-      backgroundImage: 'linear-gradient(135deg, #2F6FED, #5B8DFF)',
-      cursor: 'pointer',
-      boxShadow: '0 8px 18px rgba(47,111,237,0.35)',
-    }),
-  },
-
-  searchButtonText: {
-    color: WHITE,
-    fontSize: 14,
-    fontWeight: '900',
-    letterSpacing: 0.3,
+    marginBottom: 6,
   },
 
   trustRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     alignItems: 'center',
-    marginTop: 18,
+    marginTop: 14,
     gap: 10,
   },
 
@@ -485,20 +268,22 @@ export const styles = StyleSheet.create({
   // Shared "pressed" feedback for cards and buttons.
   cardPressed: {
     opacity: 0.88,
-    transform: [{ scale: 0.985 }],
+    transform: [{ scale: 0.97 }],
   },
 
   categorySection: {
     width: '100%',
     paddingHorizontal: 42,
-    paddingTop: 32,
-    paddingBottom: 38,
+    paddingTop: 28,
+    paddingBottom: 34,
     backgroundColor: LIGHT_BG,
+    borderTopLeftRadius: 26,
+    borderTopRightRadius: 26,
   },
 
   categorySectionMobile: {
     paddingHorizontal: 16,
-    paddingTop: 24,
+    paddingTop: 22,
     paddingBottom: 28,
   },
 
@@ -532,21 +317,19 @@ export const styles = StyleSheet.create({
     fontWeight: '900',
   },
 
+  // OLX-style category grid: icon tile on top, label underneath.
   categoryRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
+    justifyContent: 'space-between',
+    gap: 10,
   },
 
   categoryCard: {
-    flexGrow: 1,
-    flexShrink: 1,
-    flexBasis: 150,
+    flex: 1,
     minWidth: 0,
-    minHeight: 88,
-    flexDirection: 'row',
     alignItems: 'center',
-    padding: 14,
+    paddingVertical: 14,
+    paddingHorizontal: 6,
     borderRadius: 20,
     backgroundColor: WHITE,
     borderWidth: 1,
@@ -568,44 +351,35 @@ export const styles = StyleSheet.create({
   },
 
   categoryIconWrap: {
-    width: 46,
-    height: 46,
-    borderRadius: 15,
+    width: 64,
+    height: 64,
+    borderRadius: 18,
     backgroundColor: '#EEF4FF',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 12,
-    flexShrink: 0,
+    marginBottom: 10,
   },
 
   categoryIcon: {
-    fontSize: 22,
-  },
-
-  categoryTextWrap: {
-    flex: 1,
-    minWidth: 0,
+    fontSize: 30,
   },
 
   categoryTitle: {
     color: NAVY,
-    fontSize: 14,
-    fontWeight: '900',
-    marginBottom: 4,
+    fontSize: 12,
+    fontWeight: '800',
+    textAlign: 'center',
   },
 
-  categoryDescription: {
-    color: MUTED,
-    fontSize: 11,
-    lineHeight: 16,
+  // Selected category tile (filters the vehicles shown below).
+  categoryCardActive: {
+    borderColor: BLUE,
+    borderWidth: 2,
+    backgroundColor: '#EEF4FF',
   },
 
-  categoryArrow: {
+  categoryTitleActive: {
     color: BLUE,
-    fontSize: 17,
-    fontWeight: '900',
-    marginLeft: 5,
-    flexShrink: 0,
   },
 
   sellBanner: {

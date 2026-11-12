@@ -4,14 +4,12 @@ import {
   Easing,
   Image,
   Pressable,
-  ScrollView,
   Text,
-  TextInput,
   View,
   useWindowDimensions,
-
 } from 'react-native';
 import { styles } from '../styles/PremiumHero.styles';
+import HomeListings from './HomeListings';
 
 const VEHICLE_SLIDES = [
   {
@@ -37,306 +35,44 @@ const VEHICLE_SLIDES = [
   },
 ];
 
-const SEARCH_FIELDS = [
-  {
-    key: 'brand',
-    label: 'BRAND',
-    options: [
-      'Any Brand',
-      'Hyundai',
-      'Maruti Suzuki',
-      'Tata',
-      'Honda',
-      'Toyota',
-      'Mahindra',
-      'Kia',
-      'Renault',
-      'Ford',
-      'Volkswagen',
-      'Skoda',
-      'BMW',
-      'Mercedes-Benz',
-      'Audi',
-    ],
-  },
-  {
-    key: 'budget',
-    label: 'BUDGET',
-    options: [
-      'Any Budget',
-      'Under ₹1 Lakh',
-      '₹1–3 Lakh',
-      '₹3–5 Lakh',
-      '₹5–10 Lakh',
-      'Above ₹10 Lakh',
-    ],
-  },
-  {
-    key: 'type',
-    label: 'BODY TYPE',
-    options: [
-      'Any Type',
-      'Hatchback',
-      'Sedan',
-      'SUV',
-      'MUV',
-      'Luxury',
-      'Electric',
-    ],
-  },
-];
-
-const BUDGET_FILTERS = {
-  'Under ₹1 Lakh': {
-    label: 'Under ₹1 Lakh',
-    min: 0,
-    max: 100000,
-  },
-  '₹1–3 Lakh': {
-    label: '₹1–3 Lakh',
-    min: 100000,
-    max: 300000,
-  },
-  '₹3–5 Lakh': {
-    label: '₹3–5 Lakh',
-    min: 300000,
-    max: 500000,
-  },
-  '₹5–10 Lakh': {
-    label: '₹5–10 Lakh',
-    min: 500000,
-    max: 1000000,
-  },
-  'Above ₹10 Lakh': {
-    label: 'Above ₹10 Lakh',
-    min: 1000000,
-    max: null,
-  },
-};
+// "value" matches the vehicleType saved on each listing.
 const VEHICLE_CATEGORIES = [
   {
     icon: '🚘',
     title: 'Cars',
+    value: 'Car',
     description: 'Find your next car',
   },
   {
     icon: '🏍️',
     title: 'Two Wheelers',
+    value: 'Two Wheeler',
     description: 'Explore bikes',
   },
   {
     icon: '🚚',
     title: 'Commercial',
+    value: 'Commercial Vehicle',
     description: 'Vehicles for business',
   },
 ];
 
-function QuickSearch({ isMobile, setActiveTab, onSearch }) {
-  const [values, setValues] = useState({
-    brand: 'Any Brand',
-    budget: 'Any Budget',
-    type: 'Any Type',
-  });
-  const [open, setOpen] = useState(null);
-  const [bodyTypeSearch, setBodyTypeSearch] = useState('');
-
-  return (
-    <View style={styles.searchPanel}>
-      {SEARCH_FIELDS.map((field) => {
-        const isOpen = open === field.key;
-        const filteredOptions =
-  field.key === 'type'
-    ? field.options.filter((option) =>
-        option.toLowerCase().includes(bodyTypeSearch.toLowerCase())
-      )
-    : field.options;
-
-        return (
-          <View
-  key={field.key}
-  style={[
-    styles.searchField,
-    isOpen && styles.searchFieldOpen,
-  ]}
->
-            <Pressable
-              onPress={() => {
-                setOpen(isOpen ? null : field.key);
-                setBodyTypeSearch('');
-              }}
-              style={({ pressed }) => [
-                styles.searchFieldButton,
-                pressed && styles.searchFieldPressed,
-              ]}
-              accessibilityRole="button"
-              accessibilityLabel={`${field.label}: ${values[field.key]}`}
-            >
-              <Text style={styles.searchLabel}>{field.label}</Text>
-              <View style={styles.searchValueRow}>
-                <Text numberOfLines={1} style={styles.searchValue}>
-                  {values[field.key]}
-                </Text>
-                <Text style={styles.searchCaret}>
-                  {isOpen ? '⌃' : '⌄'}
-                </Text>
-              </View>
-            </Pressable>
-
-            {isOpen && (
-  <View style={styles.dropdown}>
-    {field.key === 'type' && (
-      <View style={styles.bodyTypeSearchBox}>
-        <TextInput
-          placeholder="Search body type or model (e.g. VXI)..."
-          placeholderTextColor="#64718B"
-          value={bodyTypeSearch}
-          onChangeText={setBodyTypeSearch}
-          style={styles.bodyTypeSearchInput}
-        />
-      </View>
-    )}
-
-    <ScrollView
-      nestedScrollEnabled
-      style={styles.dropdownScroll}
-      showsVerticalScrollIndicator={false}
-    >
-      {filteredOptions.map((option) => (
-        <Pressable
-          key={option}
-          onPress={() => {
-            setValues((previous) => ({
-              ...previous,
-              [field.key]: option,
-            }));
-            setOpen(null);
-            setBodyTypeSearch('');
-          }}
-          style={({ pressed }) => [
-            styles.dropdownOption,
-            values[field.key] === option && styles.dropdownOptionSelected,
-            pressed && styles.dropdownOptionPressed,
-          ]}
-        >
-          <Text
-            style={[
-              styles.dropdownOptionText,
-              values[field.key] === option &&
-                styles.dropdownOptionActive,
-            ]}
-          >
-            {option}
-          </Text>
-
-          {values[field.key] === option && (
-            <Text style={styles.optionCheck}>✓</Text>
-          )}
-        </Pressable>
-      ))}
-
-      {field.key === 'type' &&
-        filteredOptions.length === 0 &&
-        bodyTypeSearch.trim().length > 0 && (
-          <View style={styles.dropdownEmpty}>
-            <Text style={styles.dropdownEmptyText}>
-              No body type matches "{bodyTypeSearch.trim()}". It may be a
-              model or variant name.
-            </Text>
-
-            <Pressable
-              onPress={() => {
-                const keyword = bodyTypeSearch.trim();
-
-                setOpen(null);
-                setBodyTypeSearch('');
-
-                if (typeof onSearch === 'function') {
-                  onSearch({
-                    brand:
-                      values.brand === 'Any Brand'
-                        ? ''
-                        : values.brand,
-                    budget:
-                      values.budget === 'Any Budget'
-                        ? null
-                        : BUDGET_FILTERS[values.budget] || null,
-                    bodyType: '',
-                    keyword,
-                  });
-                } else {
-                  setActiveTab('BUY CARS');
-                }
-              }}
-              style={({ pressed }) => [
-                styles.dropdownKeywordButton,
-                pressed && styles.cardPressed,
-              ]}
-              accessibilityRole="button"
-              accessibilityLabel={`Search ${bodyTypeSearch.trim()} in Buy Cars`}
-            >
-              <Text style={styles.dropdownKeywordText}>
-                ⌕ Search "{bodyTypeSearch.trim()}" in Buy Cars
-              </Text>
-            </Pressable>
-          </View>
-        )}
-    </ScrollView>
-  </View>
-)}
-          </View>
-        );
-      })}
-
-      <Pressable
-  onPress={() => {
-    setOpen(null);
-
-    if (typeof onSearch === 'function') {
-      onSearch({
-        brand:
-          values.brand === 'Any Brand'
-            ? ''
-            : values.brand,
-
-        budget:
-          values.budget === 'Any Budget'
-            ? null
-            : BUDGET_FILTERS[values.budget] || null,
-
-        bodyType:
-          values.type === 'Any Type'
-            ? ''
-            : values.type,
-      });
-    } else {
-      setActiveTab('BUY CARS');
-    }
-  }}
-  style={({ pressed }) => [
-    styles.searchButton,
-    pressed && styles.cardPressed,
-  ]}
-  accessibilityRole="button"
-  accessibilityLabel="Search vehicles"
->
-  <Text style={styles.searchButtonText}>
-    ⌕ Search Vehicles
-  </Text>
-</Pressable>
-    </View>
-  );
-}
-
 export default function PremiumHero({
   setActiveTab,
   userName,
+  // onSearch is no longer used here (search panel removed) but kept so
+  // existing callers passing it do not break.
+  // eslint-disable-next-line no-unused-vars
   onSearch,
+  openChat,
+  onOpenVehicle,
 }) {
   const { width } = useWindowDimensions();
   const isMobile = width < 768;
   const isSmallMobile = width < 380;
 
   const [slideIndex, setSlideIndex] = useState(0);
+  const [selectedType, setSelectedType] = useState('');
   const [failedImages, setFailedImages] = useState({});
   const imageOpacity = useRef(new Animated.Value(1)).current;
   const contentOpacity = useRef(new Animated.Value(0)).current;
@@ -494,12 +230,6 @@ export default function PremiumHero({
             {activeSlide.subtitle} Buy or sell with confidence on CARVIO.
           </Text>
 
-          <QuickSearch
-  isMobile={isMobile}
-  setActiveTab={setActiveTab}
-  onSearch={onSearch}
-/>
-
           <View style={styles.trustRow}>
             <View style={styles.trustChip}>
               <Text style={styles.trustText}>✓ Verified listings</Text>
@@ -528,32 +258,48 @@ export default function PremiumHero({
         </View>
 
         <View style={styles.categoryRow}>
-          {VEHICLE_CATEGORIES.map((category) => (
-            <Pressable
-              key={category.title}
-              onPress={() => setActiveTab('BUY CARS')}
-              style={({ pressed }) => [
-                styles.categoryCard,
-                pressed && styles.cardPressed,
-              ]}
-              accessibilityRole="button"
-              accessibilityLabel={category.title}
-            >
-              <View style={styles.categoryIconWrap}>
-                <Text style={styles.categoryIcon}>{category.icon}</Text>
-              </View>
+          {VEHICLE_CATEGORIES.map((category) => {
+            const isSelected = selectedType === category.value;
 
-              <View style={styles.categoryTextWrap}>
-                <Text style={styles.categoryTitle}>{category.title}</Text>
-                <Text style={styles.categoryDescription}>
-                  {category.description}
+            return (
+              <Pressable
+                key={category.title}
+                onPress={() =>
+                  setSelectedType(isSelected ? '' : category.value)
+                }
+                style={({ pressed }) => [
+                  styles.categoryCard,
+                  isSelected && styles.categoryCardActive,
+                  pressed && styles.cardPressed,
+                ]}
+                accessibilityRole="button"
+                accessibilityState={{ selected: isSelected }}
+                accessibilityLabel={`${category.title}. ${category.description}`}
+              >
+                <View style={styles.categoryIconWrap}>
+                  <Text style={styles.categoryIcon}>{category.icon}</Text>
+                </View>
+
+                <Text
+                  numberOfLines={1}
+                  style={[
+                    styles.categoryTitle,
+                    isSelected && styles.categoryTitleActive,
+                  ]}
+                >
+                  {category.title}
                 </Text>
-              </View>
-
-              <Text style={styles.categoryArrow}>↗</Text>
-            </Pressable>
-          ))}
+              </Pressable>
+            );
+          })}
         </View>
+
+        <HomeListings
+          vehicleType={selectedType}
+          setActiveTab={setActiveTab}
+          openChat={openChat}
+          onOpenVehicle={onOpenVehicle}
+        />
 
         <Pressable
           onPress={() => setActiveTab('SELL CARS')}

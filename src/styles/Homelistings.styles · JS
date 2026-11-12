@@ -1,0 +1,321 @@
+import { StyleSheet, Platform } from 'react-native';
+
+const isWeb = Platform.OS === 'web';
+const web = (value) => (isWeb ? value : {});
+
+const NAVY = '#12224F';
+const BLUE = '#2F6FED';
+const WHITE = '#FFFFFF';
+const MUTED = '#667085';
+const BORDER = '#E5EAF2';
+
+export const styles = StyleSheet.create({
+  section: {
+    width: '100%',
+    marginTop: 26,
+  },
+
+  headingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 10,
+    marginBottom: 14,
+  },
+
+  headingTextWrap: {
+    flex: 1,
+    minWidth: 0,
+  },
+
+  heading: {
+    color: NAVY,
+    fontSize: 20,
+    fontWeight: '900',
+    letterSpacing: -0.3,
+  },
+
+  headingCount: {
+    color: MUTED,
+    fontSize: 12,
+    marginTop: 3,
+  },
+
+  viewAll: {
+    color: BLUE,
+    fontSize: 13,
+    fontWeight: '900',
+  },
+
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 14,
+  },
+
+  card: {
+    minWidth: 0,
+    backgroundColor: WHITE,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: BORDER,
+    overflow: 'hidden',
+    ...(isWeb
+      ? null
+      : {
+          elevation: 3,
+          shadowColor: NAVY,
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.08,
+          shadowRadius: 10,
+        }),
+    ...web({
+      boxShadow: '0 8px 22px rgba(18,34,79,0.07)',
+    }),
+  },
+
+  imageWrap: {
+    width: '100%',
+    aspectRatio: 1.6,
+    backgroundColor: '#EEF3FA',
+    position: 'relative',
+    overflow: 'hidden',
+  },
+
+  image: {
+    width: '100%',
+    height: '100%',
+  },
+
+  imagePlaceholder: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#EEF4FF',
+  },
+
+  placeholderIcon: {
+    fontSize: 46,
+  },
+
+  placeholderText: {
+    marginTop: 6,
+    fontSize: 12,
+    color: '#7A8496',
+  },
+
+  featuredBadge: {
+    position: 'absolute',
+    top: 12,
+    left: 0,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderTopRightRadius: 6,
+    borderBottomRightRadius: 6,
+    backgroundColor: '#FFC727',
+  },
+
+  featuredBadgeText: {
+    color: NAVY,
+    fontSize: 10,
+    fontWeight: '900',
+    letterSpacing: 0.8,
+  },
+
+  likeButton: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: 'rgba(255,255,255,0.94)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...web({
+      cursor: 'pointer',
+      boxShadow: '0 3px 10px rgba(0,0,0,0.18)',
+    }),
+  },
+
+  likeIcon: {
+    color: NAVY,
+    fontSize: 22,
+    lineHeight: 26,
+  },
+
+  likeIconActive: {
+    color: '#F04438',
+  },
+
+  photoCount: {
+    position: 'absolute',
+    right: 10,
+    bottom: 10,
+    paddingHorizontal: 9,
+    paddingVertical: 4,
+    borderRadius: 10,
+    backgroundColor: 'rgba(8,17,40,0.62)',
+  },
+
+  photoCountText: {
+    color: WHITE,
+    fontSize: 11,
+    fontWeight: '800',
+  },
+
+  cardBody: {
+    paddingHorizontal: 14,
+    paddingTop: 12,
+    paddingBottom: 6,
+  },
+
+  priceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
+  },
+
+  price: {
+    color: NAVY,
+    fontSize: 20,
+    fontWeight: '900',
+  },
+
+  posted: {
+    color: '#8B95A8',
+    fontSize: 11,
+    fontWeight: '600',
+  },
+
+  title: {
+    color: '#1E293B',
+    fontSize: 15,
+    fontWeight: '700',
+    marginTop: 5,
+  },
+
+  meta: {
+    color: MUTED,
+    fontSize: 12,
+    marginTop: 4,
+  },
+
+  location: {
+    color: '#475569',
+    fontSize: 12,
+    fontWeight: '600',
+    marginTop: 8,
+  },
+
+  actionRow: {
+    flexDirection: 'row',
+    gap: 10,
+    paddingHorizontal: 14,
+    paddingTop: 10,
+    paddingBottom: 14,
+  },
+
+  chatButton: {
+    flex: 1,
+    minHeight: 46,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: BLUE,
+    backgroundColor: WHITE,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...web({ cursor: 'pointer' }),
+  },
+
+  chatButtonText: {
+    color: BLUE,
+    fontSize: 14,
+    fontWeight: '900',
+  },
+
+  callButton: {
+    flex: 1,
+    minHeight: 46,
+    borderRadius: 12,
+    backgroundColor: BLUE,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...web({ cursor: 'pointer' }),
+  },
+
+  callButtonText: {
+    color: WHITE,
+    fontSize: 14,
+    fontWeight: '900',
+  },
+
+  pressed: {
+    opacity: 0.85,
+    transform: [{ scale: 0.98 }],
+  },
+
+  moreButton: {
+    minHeight: 50,
+    marginTop: 18,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: BLUE,
+    backgroundColor: WHITE,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...web({ cursor: 'pointer' }),
+  },
+
+  moreButtonText: {
+    color: BLUE,
+    fontSize: 14,
+    fontWeight: '900',
+  },
+
+  stateBox: {
+    paddingVertical: 40,
+    paddingHorizontal: 20,
+    borderRadius: 18,
+    backgroundColor: WHITE,
+    borderWidth: 1,
+    borderColor: BORDER,
+    alignItems: 'center',
+  },
+
+  stateIcon: {
+    fontSize: 38,
+    marginBottom: 8,
+  },
+
+  stateTitle: {
+    color: NAVY,
+    fontSize: 16,
+    fontWeight: '800',
+  },
+
+  stateText: {
+    color: MUTED,
+    fontSize: 12.5,
+    textAlign: 'center',
+    marginTop: 8,
+    lineHeight: 19,
+  },
+
+  stateButton: {
+    minHeight: 44,
+    marginTop: 16,
+    paddingHorizontal: 22,
+    borderRadius: 12,
+    backgroundColor: BLUE,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  stateButtonText: {
+    color: WHITE,
+    fontSize: 13,
+    fontWeight: '800',
+  },
+});

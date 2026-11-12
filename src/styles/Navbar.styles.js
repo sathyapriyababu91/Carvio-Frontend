@@ -638,6 +638,143 @@ export const styles = StyleSheet.create({
     fontWeight: '900',
   },
 
+  // ---------- Phone bottom tab bar (OLX style) ----------
+  // On the web it is fixed to the bottom of the screen. On Android/iOS it
+  // is pinned to the bottom of the screen container that holds the Navbar.
+  bottomBar: {
+    position: isWeb ? 'fixed' : 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: 66,
+    paddingBottom: 6,
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    backgroundColor: WHITE,
+    borderTopWidth: 1,
+    borderTopColor: BORDER,
+    zIndex: 200,
+    elevation: 16,
+    ...(isWeb
+      ? { boxShadow: '0 -4px 18px rgba(18,34,79,0.08)' }
+      : {
+          shadowColor: NAVY,
+          shadowOffset: { width: 0, height: -3 },
+          shadowOpacity: 0.08,
+          shadowRadius: 8,
+        }),
+  },
+
+  bottomTab: {
+    flex: 1,
+    minWidth: 0,
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...web({ cursor: 'pointer' }),
+  },
+
+  bottomIconWrap: {
+    width: 46,
+    height: 28,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 3,
+  },
+
+  bottomIconWrapActive: {
+    backgroundColor: BLUE_SOFT,
+  },
+
+  bottomIcon: {
+    color: '#7C879B',
+    fontSize: 18,
+  },
+
+  bottomIconActive: {
+    color: BLUE,
+  },
+
+  bottomLabel: {
+    color: '#7C879B',
+    fontSize: 10,
+    fontWeight: '700',
+  },
+
+  bottomLabelActive: {
+    color: BLUE,
+    fontWeight: '900',
+  },
+
+  // Unread count badge on the Chat tab.
+  bottomBadge: {
+    position: 'absolute',
+    top: -3,
+    right: 2,
+    minWidth: 16,
+    height: 16,
+    paddingHorizontal: 4,
+    borderRadius: 8,
+    backgroundColor: RED,
+    borderWidth: 1.5,
+    borderColor: WHITE,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  bottomBadgeText: {
+    color: WHITE,
+    fontSize: 9,
+    fontWeight: '900',
+  },
+
+  // Centre "Sell" slot with the raised round + button.
+  bottomTabCenter: {
+    flex: 1,
+    minWidth: 0,
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+  },
+
+  bottomSellButton: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    marginTop: -24,
+    marginBottom: 3,
+    backgroundColor: BLUE,
+    borderWidth: 4,
+    borderColor: WHITE,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 8,
+    ...(isWeb
+      ? {
+          cursor: 'pointer',
+          boxShadow: '0 6px 16px rgba(47,111,237,0.40)',
+        }
+      : {
+          shadowColor: BLUE,
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.35,
+          shadowRadius: 8,
+        }),
+  },
+
+  bottomSellPlus: {
+    color: WHITE,
+    fontSize: 30,
+    fontWeight: '500',
+    lineHeight: 34,
+    marginTop: -2,
+  },
+
+  bottomSellLabel: {
+    marginBottom: 2,
+  },
+
   // ---------- Phone menu (rendered inside a Modal) ----------
   menuOverlay: {
     flex: 1,
